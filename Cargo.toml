@@ -1,0 +1,16 @@
+[package]
+name = "rpp_compiler"
+version = "0.1.0"
+edition = "2021"
+description = "R++ / Rpp compiler foundation: lexer, parser, AST"
+license = "MIT"
+
+[[bin]]
+name = "rpp"
+path = "src/main.rs"
+
+[lib]
+name = "rpp_compiler"
+path = "src/lib.rs"
+
+[dependencies]
