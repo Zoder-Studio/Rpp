@@ -338,6 +338,7 @@ impl Parser {
             }
             TokenKind::If => self.parse_if(),
             TokenKind::While => self.parse_while(),
+            TokenKind::For => self.parse_for(),
             TokenKind::Return => {
                 self.advance();
                 if self.match_tok(&TokenKind::Semicolon) {
@@ -445,6 +446,19 @@ impl Parser {
         let condition = self.parse_expr()?;
         let body = self.parse_block()?;
         Ok(Stmt::While { condition, body })
+    }
+
+    fn parse_for(&mut self) -> PResult<Stmt> {
+        self.expect(TokenKind::For)?;
+        let var = self.expect_ident()?;
+        self.expect(TokenKind::In)?;
+        let iterable = self.parse_expr()?;
+        let body = self.parse_block()?;
+        Ok(Stmt::For {
+            var,
+            iterable,
+            body,
+        })
     }
 
     // ---- expressions (precedence climbing) ----

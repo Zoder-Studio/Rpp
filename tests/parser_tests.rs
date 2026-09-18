@@ -325,6 +325,37 @@ fn parses_complete_example_program_with_mixed_function_forms() {
 }
 
 #[test]
+fn parses_for_in_loop() {
+    let program = parse_source(
+        r#"
+        main start = {
+            let names = ["Komandan", "Nasa", "Rpp"];
+            for name in names {
+                println(name);
+            }
+        }
+        "#,
+    )
+    .expect("should parse");
+
+    let Item::Main(block) = &program.items[0] else {
+        panic!("expected main");
+    };
+    match &block.stmts[1] {
+        Stmt::For {
+            var,
+            iterable,
+            body,
+        } => {
+            assert_eq!(var, "name");
+            assert!(matches!(iterable, Expr::Ident(n) if n == "names"));
+            assert_eq!(body.stmts.len(), 1);
+        }
+        other => panic!("expected For stmt, got {other:?}"),
+    }
+}
+
+#[test]
 fn parses_const_let_declaration() {
     // Regression test: `const let` must not consume the `Let` token twice.
     let program = parse_source("main start = { const let score: int = 10; }").expect("should parse");

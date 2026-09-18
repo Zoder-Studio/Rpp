@@ -251,6 +251,67 @@ fn shadowing_a_variable_in_the_same_scope_is_allowed() {
 }
 
 #[test]
+fn for_loop_variable_is_visible_in_its_body() {
+    expect_ok(
+        r#"
+        create.sys = println;
+        main start = {
+            let names = ["Komandan", "Nasa"];
+            for name in names {
+                println(name);
+            }
+        }
+        "#,
+    );
+}
+
+#[test]
+fn for_loop_over_undefined_iterable_is_an_error() {
+    let errors = expect_errors(
+        r#"
+        create.sys = println;
+        main start = {
+            for item in undefined_list {
+                println(item);
+            }
+        }
+        "#,
+    );
+    assert!(errors.iter().any(|e| e.message.contains("undefined_list")));
+}
+
+#[test]
+fn close_inside_for_loop_is_allowed() {
+    expect_ok(
+        r#"
+        main start = {
+            let numbers = [1, 2, 3];
+            for n in numbers {
+                close;
+            }
+        }
+        "#,
+    );
+}
+
+#[test]
+fn for_loop_variable_does_not_leak_outside_its_body() {
+    let errors = expect_errors(
+        r#"
+        create.sys = println;
+        main start = {
+            let numbers = [1, 2, 3];
+            for n in numbers {
+                println(n);
+            }
+            println(n);
+        }
+        "#,
+    );
+    assert!(errors.iter().any(|e| e.message.contains("undefined variable 'n'")));
+}
+
+#[test]
 fn local_create_sys_is_scoped_to_its_block() {
     // create.sys registered inside a function is visible in that function
     // but not from an unrelated function that never registered it.

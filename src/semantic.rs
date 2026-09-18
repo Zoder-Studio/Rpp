@@ -11,7 +11,7 @@
 //! - **Immutability** (section 7): assigning to a name declared with
 //!   `const let` is a compile-time error.
 //! - **`close` / `return` placement**: `close` is only valid inside a
-//!   `while` loop; `return` is only valid inside a function body or
+//!   `while`/`for` loop; `return` is only valid inside a function body or
 //!   `main start`.
 //! - **Call arity**: a call to a known local function must pass exactly as
 //!   many arguments as it declares parameters.
@@ -237,6 +237,28 @@ impl Analyzer {
                 self.check_expr(condition);
                 self.check_block(body, true, in_function);
             }
+            Stmt::For {
+                var,
+                iterable,
+                body,
+            } => {
+                self.check_expr(iterable);
+                self.push_scope();
+                self.declare_variable(var, false);
+                // Hoist local function decls / create.sys registrations for
+                // this loop body, same as check_block does.
+                for stmt in &body.stmts {
+                    match stmt {
+                        Stmt::Function(f) => self.declare_function(&f.name, f.params.len()),
+                        Stmt::CreateSys(name) => self.register_system(name),
+                        _ => {}
+                    }
+                }
+                for stmt in &body.stmts {
+                    self.check_stmt(stmt, true, in_function);
+                }
+                self.pop_scope();
+            }
             Stmt::Return(opt) => {
                 if !in_function {
                     self.error("'return' used outside of a function or 'main start'");
@@ -247,7 +269,7 @@ impl Analyzer {
             }
             Stmt::Close => {
                 if !in_loop {
-                    self.error("'close' used outside of a loop ('while')");
+                    self.error("'close' used outside of a loop ('while'/'for')");
                 }
             }
             Stmt::CreateSys(_) => {

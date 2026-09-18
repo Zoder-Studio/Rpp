@@ -96,6 +96,12 @@ pub enum Stmt {
         condition: Expr,
         body: Block,
     },
+    /// `for name in iterable { ... }`
+    For {
+        var: String,
+        iterable: Expr,
+        body: Block,
+    },
     Return(Option<Expr>),
     Close,
     CreateSys(String),
