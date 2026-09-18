@@ -334,7 +334,6 @@ impl Parser {
             TokenKind::Let => self.parse_let(false),
             TokenKind::Const => {
                 self.advance();
-                self.expect(TokenKind::Let)?;
                 self.parse_let(true)
             }
             TokenKind::If => self.parse_if(),

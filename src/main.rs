@@ -1,9 +1,9 @@
 //! `rpp` CLI entry point.
 //!
-//! Current stage: `rpp <file.rpp>` lexes and parses the given source file
-//! and prints the resulting AST (or a diagnostic on failure). This is a
-//! foundation build only — no semantic analysis, type checking, or code
-//! generation has been implemented yet.
+//! `rpp <file.rpp>` lexes, parses, and semantically analyzes the given
+//! source file, printing the resulting AST or a diagnostic on failure. No
+//! type checking, borrow checking, or code generation has been implemented
+//! yet.
 
 use std::env;
 use std::fs;
@@ -25,7 +25,7 @@ fn main() -> ExitCode {
         }
     };
 
-    match rpp_compiler::parse_source(&source) {
+    match rpp_compiler::check_source(&source) {
         Ok(program) => {
             println!("{program:#?}");
             ExitCode::SUCCESS

@@ -325,6 +325,22 @@ fn parses_complete_example_program_with_mixed_function_forms() {
 }
 
 #[test]
+fn parses_const_let_declaration() {
+    // Regression test: `const let` must not consume the `Let` token twice.
+    let program = parse_source("main start = { const let score: int = 10; }").expect("should parse");
+    let Item::Main(block) = &program.items[0] else {
+        panic!("expected main");
+    };
+    match &block.stmts[0] {
+        Stmt::Let { is_const, name, .. } => {
+            assert!(*is_const);
+            assert_eq!(name, "score");
+        }
+        other => panic!("expected Let stmt, got {other:?}"),
+    }
+}
+
+#[test]
 fn parses_arithmetic_precedence() {
     let program = parse_source("main start = { let result = 10 + 5 * 2; }").expect("should parse");
     let Item::Main(block) = &program.items[0] else {
